@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102b32">
+  <meta name="description" content="A McMaster SUMO traffic study comparing human-driven vehicles, automated vehicles and signal timing at Kipling Avenue and Dixon Road in Toronto.">
+  <title>Kipling Avenue &amp; Dixon Road | SUMO Traffic Study</title>
+  <style>
+:root {
+  --hero-bg: #102b32;
+  --hero-fg: #f7faf4;
+  --page-bg: #f9faf6;
+  --accent: #c9ef74;
+  --ink: #122d32;
+  --muted: #496061;
+  --line: #cbd6cf;
+  --teal: #146b62;
+  --body: "Inter", "Segoe UI", "Roboto", Arial, sans-serif;
+  --title: Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", Consolas, "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; color: var(--ink); background: var(--page-bg); font: 1rem/1.54 var(--body); }
+body, button { -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid #cc7512; outline-offset: 4px;
+}
+.skip { position: absolute; z-index: 4; transform: translateY(-135%); background: white; padding: .55rem 1rem; }
+.skip:focus { transform: translateY(0); }
+.wrap { width: min(73.5rem, calc(100% - clamp(2.5rem, 8vw, 7rem))); margin-inline: auto; }
+.mast, .hero, footer { background: var(--hero-bg); color: var(--hero-fg); }
+.topbar { display: flex; min-height: 4.4rem; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #476169; }
+.brand { font-size: 1.06rem; font-weight: 650; text-decoration: none; }
+.brand span { margin-left: .65rem; padding-left: .8rem; border-left: 1px solid #5d767a; color: #d3e0db; font-size: .9rem; font-weight: 400; }
+.topbar nav { display: flex; align-items: center; flex-wrap: wrap; gap: clamp(.9rem, 2.6vw, 2.3rem); }
+nav a { text-decoration: none; font-size: .93rem; color: #d7e3db; }
+nav a:hover, footer a:hover { color: var(--accent); }
+.hero-grid { display: grid; grid-template-columns: 1fr 1.02fr; align-items: center; gap: clamp(2rem, 4.5vw, 4.7rem); padding-block: clamp(3.5rem, 6.4vw, 6rem); }
+.eyebrow { margin: 0 0 .95rem; color: var(--teal); font: 700 .86rem/1.4 var(--mono); text-transform: uppercase; letter-spacing: .09em; }
+.hero .eyebrow { color: var(--accent); }
+.sep { padding-inline: .65rem; color: #91a5a4; }
+h1, h2 { margin: 0; font-family: var(--title); font-weight: 400; }
+h1 { font-size: clamp(3.3rem, 5.65vw, 5.9rem); line-height: .99; letter-spacing: -.052em; }
+h1 span { display: block; }
+.lede { max-width: 34rem; font-size: clamp(1.04rem, 1.5vw, 1.2rem); line-height: 1.49; color: #dfebe4; margin: 1.45rem 0 1.65rem; }
+.actions { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; }
+.button { display: inline-flex; min-height: 2.85rem; align-items: center; font-weight: 650; text-decoration: none; border-radius: .2rem; padding: .56rem 1.08rem; }
+.primary { background: var(--accent); color: #152c2e; }
+.primary:hover { background: #dcffa0; }
+.quiet { border: 1px solid #82999b; color: white; }
+.quiet:hover { border-color: white; }
+.byline { margin: 1.1rem 0 0; color: #c7d9d2; font-size: .88rem; }
+figure { margin: 0; }
+.hero-map img, .chart-grid img, .method-card img { display: block; width: 100%; height: auto; }
+.hero-map { border: 1px solid #577176; }
+.hero-map figcaption { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .7rem .9rem; font: .78rem/1.35 var(--mono); color: #e4eee6; }
+.hero-map figcaption span + span { color: #c5d2cd; }
+.statstrip { background: #e4ece3; border-bottom: 1px solid #c3d1c7; }
+.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; padding-block: 1.4rem; margin-block: 0; }
+.stats div { display: flex; flex-direction: column-reverse; gap: .13rem; padding-left: clamp(1.3rem, 4vw, 4rem); border-left: 1px solid #a9bab0; }
+.stats div:first-child { padding-left: 0; border: 0; }
+.stats dt { font-size: .95rem; color: #354f4e; }
+.stats dd { margin: 0; font-size: clamp(1.7rem, 3.15vw, 2.45rem); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.stats dd small { font-size: 1rem; letter-spacing: 0; }
+.section { padding-block: clamp(3.6rem, 6.5vw, 6.2rem); }
+h2 { font-size: clamp(2.35rem, 4.4vw, 4.1rem); line-height: 1.05; letter-spacing: -.045em; }
+h3 { margin: 0; font-size: 1.3rem; line-height: 1.24; letter-spacing: -.018em; }
+.section-intro { margin: 1.15rem 0 0; max-width: 36rem; color: var(--muted); font-size: 1.06rem; }
+.section-intro.wide { max-width: 57rem; }
+.playback { display: grid; grid-template-columns: .79fr 1.32fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; }
+.movie video { width: 100%; display: block; aspect-ratio: 16/9; background: #16333a; border-radius: .15rem; }
+.movie figcaption { margin: .6rem 0 0; font-size: .92rem; color: var(--muted); }
+.scenes { margin-top: 1.4rem; border-top: 1px solid var(--line); }
+.scenes button { width: 100%; min-height: 2.85rem; display: flex; align-items: center; gap: .7rem; border: none; border-bottom: 1px solid var(--line); background: transparent; padding: .5rem .15rem; color: var(--ink); text-align: left; font: 600 .99rem/1.3 var(--body); cursor: pointer; }
+.scenes button:hover { background: #e9eee6; }
+.swatch { width: .82rem; height: .82rem; border: 1px solid #587070; border-radius: 50%; flex: none; }
+.hdv { background: #f2c546; }
+.cav { background: #a2a9ad; }
+.clock { margin-left: auto; font: .87rem/1 var(--mono); color: var(--muted); }
+.definition { font-size: .9rem; line-height: 1.45; color: var(--muted); margin: .9rem 0 0; }
+.study { background: #edf2eb; border-block: 1px solid #dae2d9; }
+.study-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: clamp(1.35rem,3vw,3rem); margin-top: 2rem; }
+.study-grid article { border-top: 2px solid #598074; padding-top: 1rem; }
+.study-grid ul, .method-card ul { padding-inline-start: 1.15rem; margin: .85rem 0 0; }
+.study-grid li, .method-card li { margin: .42rem 0; }
+li::marker { color: #38786a; }
+.method-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1.1rem; margin-top: 2rem; align-items: start; }
+.method-card { min-width: 0; }
+.method-image, .chart-grid a { display: block; border: 1px solid #bccbc2; border-radius: .15rem; overflow: hidden; }
+.method-image:hover, .chart-grid a:hover { border-color: var(--teal); }
+.method-card h3 { margin: 1rem 0 .45rem; }
+.method-card p { margin: 0; color: var(--muted); }
+.method-card details { margin: .8rem 0 0; }
+.method-card summary { color: var(--teal); font-size: .95rem; font-weight: 650; cursor: pointer; width: fit-content; }
+.method-card summary:hover, .text-link:hover { text-decoration: underline; color: #124e48; }
+.method-card details[open] ul { border-left: 2px solid #bad0c3; padding-left: 1.5rem; }
+.results { background: #e6eee8; border-block: 1px solid #cbd8cc; }
+.chart-grid { margin-block: 1.8rem 2.1rem; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; text-align: right; font-variant-numeric: tabular-nums; }
+caption { text-align: left; color: var(--ink); font-weight: 650; font-size: 1.3rem; padding-bottom: .85rem; }
+thead { background: #1d3d42; color: white; }
+th, td { border-bottom: 1px solid #becdc1; padding: .72rem .9rem; }
+thead th { font-size: .99rem; line-height: 1.24; }
+thead small { font-size: .86rem; font-weight: 450; color: #e2ebe6; }
+th:first-child { text-align: left; }
+tbody th { font-weight: 500; }
+tbody tr:nth-child(odd) { background: #f4f7f1; }
+.text-link { color: #135c53; text-underline-offset: .19em; font-weight: 640; }
+.data-link { display: inline-block; margin-top: .8rem; }
+.discussion { display: grid; grid-template-columns: 1fr 2.15fr; gap: 2rem; border-top: 1px solid #aebfb4; padding-top: 1.7rem; margin-top: 2.2rem; }
+.discussion p, .sources p { margin: 0 0 .8rem; }
+.discussion p:last-child, .sources p:last-child { margin-bottom: 0; }
+.credits { display: grid; grid-template-columns: 1.1fr .9fr; align-items: start; gap: 3rem; }
+.credits h2 { font-size: clamp(2.25rem, 3.8vw, 3.25rem); }
+.credits .author-name { font-size: 1.28rem; font-weight: 650; margin: 1.2rem 0 .12rem; }
+.credits p { margin-top: .2rem; margin-bottom: .5rem; }
+.credits .affiliation { margin: .7rem 0; color: var(--muted); }
+.sources { margin-top: 1.55rem; max-width: 32rem; }
+.sources h3 { margin-bottom: .85rem; }
+.sources a { display: inline-block; margin-top: .5rem; }
+.footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.48rem; font-size: .9rem; color: #d9e6de; }
+.footer-inner a { text-underline-offset: .18em; }
+@media (max-width: 850px) {
+  .brand span { display: none; }
+  .hero-grid { grid-template-columns: 1fr 1fr; gap: 1.7rem; }
+  .hero-map figcaption { flex-wrap: wrap; }
+  .playback { grid-template-columns: .9fr 1fr; gap: 1.7rem; }
+  .method-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 2rem 1.3rem; }
+}
+@media (max-width: 660px) {
+  .hero-grid, .playback, .study-grid, .chart-grid, .discussion, .credits { grid-template-columns: 1fr; }
+  .topbar { align-items: flex-start; flex-direction: column; gap: .5rem; padding-block: .9rem; }
+  .topbar nav { gap: 1.15rem; }
+  .hero-grid { padding-block: 2.7rem 1.8rem; gap: 1.7rem; }
+  .hero-map figcaption { font-size: .75rem; }
+  .stats { padding-block: 1rem; }
+  .stats div { padding-left: .75rem; }
+  .stats dd { font-size: 1.55rem; }
+  .stats dd small { font-size: .83rem; display: block; margin-top: .12rem; }
+  .stats dt { font-size: .82rem; line-height: 1.2; margin-top: .25rem; }
+  .study-grid { gap: 1.55rem; }
+  .playback { gap: 1.5rem; }
+  .discussion, .credits { gap: .85rem; }
+  .chart-grid { margin-bottom: 1.45rem; }
+  th, td { padding: .6rem; }
+  table { min-width: 31rem; }
+  .sources { margin-top: 1.4rem; }
+  .footer-inner { align-items: flex-start; flex-direction: column; }
+}
+@media (max-width: 440px) {
+  .method-grid { grid-template-columns: 1fr; }
+  .wrap { width: calc(100% - 2.25rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to project</a>
+  <div class="mast">
+    <header class="wrap topbar">
+      <a href="#main" class="brand">McMaster University <span data-text="hero.tagline">Smart Cities and Communities</span></a>
+      <nav aria-label="Project sections">
+        <a href="#simulation">Simulation</a><a href="#methods">Methods</a><a href="#results">Results</a><a href="#author">Author</a>
+      </nav>
+    </header>
+  </div>
+  <main id="main">
+    <section class="hero" aria-labelledby="projectTitleText">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span data-text="hero.courseTag">SMRTTECH 4SC3</span><span class="sep">/</span>Mini Project A</p>
+          <h1 id="projectTitleText">Kipling Avenue <span>&amp; Dixon Road</span></h1>
+          <p class="lede" data-text="hero.summary">Group 4 tested how vehicle automation and signal timing affected speeds on a four-lane approach in Toronto.</p>
+          <div class="actions"><a class="button primary" href="#simulation">Watch the simulation</a><a class="button quiet" href="#results">View results</a></div>
+          <p class="byline"><span data-text="hero.studentName">Shengyao Xu</span> · Group 4 · Fall 2026</p>
+        </div>
+        <figure class="hero-map">
+          <img id="profileImg" src="assets/img/image1.jpg" width="1300" height="800" alt="Aerial study map of junction J1 in Toronto.">
+          <figcaption><span>Kipling–Dixon junction</span><span>43.6944° N &nbsp; 79.5586° W</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <div class="statstrip">
+      <dl class="wrap stats">
+        <div><dt>Nominal demand</dt><dd>3,000 <small>veh/h</small></dd></div>
+        <div><dt>Fixed signal cycle</dt><dd>60 <small>seconds</small></dd></div>
+        <div><dt>Observation window</dt><dd>1 <small>hour per run</small></dd></div>
+      </dl>
+    </div>
+
+    <section class="section wrap playback" id="simulation" aria-labelledby="simTitle">
+      <div>
+        <p class="eyebrow">Traffic simulation</p>
+        <h2 id="simTitle">Two fleets at the same signal</h2>
+        <p class="section-intro">Watch vehicles approach junction J1 under the original signal plan. Both clips replay simulation time 600–640 s at four times real speed.</p>
+        <div class="scenes" aria-label="Video chapters">
+          <button type="button" data-start="0" aria-controls="introHeroVideo"><span class="swatch hdv"></span><span>Base · 100% HDV</span><span class="clock">0:00</span></button>
+          <button type="button" data-start="10" aria-controls="introHeroVideo"><span class="swatch cav"></span><span>Scenario 1 · 100% AV/CAV</span><span class="clock">0:10</span></button>
+        </div>
+        <p class="definition">HDV means human-driven vehicle. CAV means connected and autonomous vehicle.</p>
+      </div>
+      <figure class="movie">
+        <video id="introHeroVideo" controls muted playsinline preload="metadata" poster="assets/video/poster.jpg" aria-label="Group 4 SUMO scenario comparison" aria-describedby="introCaption">
+          <source id="introHeroSource" src="assets/video/video.mp4" type="video/mp4">
+          <a href="assets/video/video.mp4">Download the simulation video</a>
+        </video>
+        <figcaption id="introCaption" data-text="intro.videoCaption">Yellow vehicles show the HDV baseline and grey vehicles show the CAV scenario.</figcaption>
+      </figure>
+    </section>
+
+    <section class="study" id="study" aria-labelledby="studyTitle">
+      <div class="wrap section">
+        <p class="eyebrow">Mini Project A</p>
+        <h2 id="studyTitle" data-text="caseStudy.title">Study design</h2>
+        <p class="section-intro wide" data-text="intro.projectTitle">SUMO roadway modelling and speed–density assessment at Kipling Avenue and Dixon Road, Toronto</p>
+        <div class="study-grid">
+          <article><h3 data-text="caseStudy.backgroundTitle">Background</h3><ul id="backgroundList"></ul></article>
+          <article><h3 data-text="caseStudy.problemTitle">Problem statement</h3><ul id="problemList"></ul></article>
+          <article><h3 data-text="caseStudy.objectivesTitle">Project objectives</h3><ul id="objectivesList"></ul></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap" id="methods" aria-labelledby="overviewTitle">
+      <p class="eyebrow">Methodology</p>
+      <h2 id="overviewTitle" data-text="overview.title">From the network to the results</h2>
+      <div class="method-grid" id="stepsRow"></div>
+    </section>
+
+    <section class="results" id="results" aria-labelledby="resultsTitle">
+      <div class="wrap section">
+        <p class="eyebrow">Results and discussion</p>
+        <h2 id="resultsTitle" data-text="results.title">Speed and density on E61</h2>
+        <p class="section-intro wide" data-text="results.subtitle">Matched observations from the same upstream SUMO edge.</p>
+        <div class="chart-grid">
+          <a id="leftChartLink" href="assets/img/image6.jpg" aria-label="Open the full-size HDV chart"><img id="chartLeftImg" src="assets/img/image6.jpg" width="1300" height="800" loading="lazy" alt="Base speed–density diagram on E61."></a>
+          <a id="rightChartLink" href="assets/img/image7.jpg" aria-label="Open the full-size CAV chart"><img id="chartRightImg" src="assets/img/image7.jpg" width="1300" height="800" loading="lazy" alt="Scenario 1 speed–density diagram on E61."></a>
+        </div>
+        <div class="table-scroll" role="region" aria-labelledby="averagesCaption" tabindex="0">
+          <table>
+            <caption id="averagesCaption">One-hour averages on the four-lane approach</caption>
+            <thead><tr><th scope="col">E61 measure</th><th scope="col">Base<br><small>100% HDV</small></th><th scope="col">Scenario 1<br><small>100% CAV</small></th><th scope="col">Scenario 2<br><small>HDV, revised timing</small></th></tr></thead>
+            <tbody id="kpiTbody"></tbody>
+          </table>
+        </div>
+        <a class="text-link data-link" id="dataLink" download href="assets/data/E61_intervals.csv">Download interval data (CSV)</a>
+        <div class="discussion">
+          <h3>What changed on E61?</h3>
+          <div id="discussionList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap section credits" id="author" aria-labelledby="teamTitle">
+      <div>
+        <p class="eyebrow">Lab 5</p>
+        <h2 id="teamTitle" data-text="team.title">Author and acknowledgments</h2>
+        <p class="author-name" data-text="hero.studentName">Shengyao Xu</p>
+        <p data-text="team.members.0.role">Lab 5 web showcase, results analysis and visualization</p>
+        <p class="affiliation"><span data-text="hero.program">Automation Engineering Technology, B.Tech.</span><br><span data-text="hero.university">McMaster University</span></p>
+        <a class="text-link" id="emailLink" href="mailto:shengyao.xu@example.com">shengyao.xu@example.com</a>
+      </div>
+      <div class="sources">
+        <h3>Project sources</h3>
+        <div id="ackList"></div>
+        <a class="text-link" id="repoLink" href="https://github.com/Shengyao122/smartcity-projecta.github.io">Project repository</a>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap footer-inner"><span data-text="disclaimer.short">McMaster University coursework based on simulated traffic and assumed demand.</span><a id="templateCreditLink" href="https://roadwayvr.com">Showcase template by RoadwayVR</a></div></footer>
+  <noscript><p class="wrap">Enable JavaScript to display the written study, method details and summary table. The video, individual charts and CSV are available from their links.</p></noscript>
+<script src="config.js"></script>
+<script>
+// Bind the course template's showcase sections to the project configuration.
+"use strict";
+
+const config = window.SITE_CONFIG;
+const byId = id => document.getElementById(id);
+
+function node(tag, text) {
+  const element = document.createElement(tag);
+  element.textContent = text;
+  return element;
+}
+
+function fillList(id, items, tag = "li") {
+  byId(id).replaceChildren(...items.map(item => node(tag, item)));
+}
+
+function showMethod(step, module) {
+  const article = document.createElement("article");
+  article.className = "method-card";
+  const link = document.createElement("a");
+  link.className = "method-image";
+  link.href = step.image;
+  link.setAttribute("aria-label", "Open full-size figure for " + step.title.toLowerCase());
+  const image = document.createElement("img");
+  image.src = step.image;
+  image.alt = step.alt;
+  image.width = 1300;
+  image.height = 800;
+  image.loading = "lazy";
+  link.append(image);
+  const detail = document.createElement("details");
+  const toggle = node("summary", config.implementation.title);
+  toggle.setAttribute("aria-label", "Method details for " + module.title.toLowerCase());
+  const list = document.createElement("ul");
+  list.append(...module.bullets.map(bullet => node("li", bullet.text)));
+  detail.append(toggle, list);
+  article.append(link, node("h3", step.title), node("p", step.text), detail);
+  return article;
+}
+
+if (config) {
+  document.title = config.pageTitle;
+  document.querySelectorAll("[data-text]").forEach(element => {
+    const value = element.dataset.text.split(".").reduce((object, key) => object?.[key], config);
+    if (typeof value === "string") element.textContent = value;
+  });
+  for (const [property, value] of Object.entries({
+    "--hero-bg": config.theme.heroBg, "--hero-fg": config.theme.heroText,
+    "--page-bg": config.theme.pageBg, "--accent": config.theme.accent
+  })) document.documentElement.style.setProperty(property, value);
+  const titleParts = config.hero.place.split(" & ");
+  byId("projectTitleText").replaceChildren(titleParts[0]);
+  if (titleParts.length > 1) byId("projectTitleText").append(" ", node("span", "& " + titleParts.slice(1).join(" & ")));
+  byId("profileImg").src = config.hero.profileImage;
+  byId("profileImg").alt = config.hero.imageAlt;
+  const email = byId("emailLink");
+  email.href = "mailto:" + config.hero.email;
+  email.textContent = config.hero.email;
+
+  fillList("backgroundList", config.caseStudy.backgroundBullets);
+  fillList("problemList", config.caseStudy.problemBullets);
+  fillList("objectivesList", config.caseStudy.objectivesBullets);
+  byId("stepsRow").replaceChildren(...config.overview.steps.map((step, i) => showMethod(step, config.implementation.modules[i])));
+  const chartBindings = [
+    [config.results.charts.left, "chartLeftImg", "leftChartLink"],
+    [config.results.charts.right, "chartRightImg", "rightChartLink"]
+  ];
+  for (const [chart, imageId, linkId] of chartBindings) {
+    const image = byId(imageId);
+    image.src = chart.src;
+    image.alt = chart.alt;
+    byId(linkId).href = chart.src;
+    byId(linkId).setAttribute("aria-label", "Open full-size chart for " + chart.title);
+  }
+  byId("kpiTbody").replaceChildren(...config.results.rows.map(([metric, ...values]) => {
+    const row = document.createElement("tr");
+    const label = node("th", metric);
+    label.scope = "row";
+    row.append(label, ...values.map(value => node("td", value)));
+    return row;
+  }));
+  byId("dataLink").href = config.results.dataUrl;
+  fillList("discussionList", config.results.discussionBullets, "p");
+  fillList("ackList", config.team.acknowledgments, "p");
+  byId("repoLink").href = config.team.repoUrl;
+  byId("repoLink").textContent = config.team.repoLabel;
+  byId("templateCreditLink").href = config.footer.templateCreditUrl;
+  byId("templateCreditLink").textContent = config.footer.templateCredit;
+
+  const video = byId("introHeroVideo");
+  video.setAttribute("aria-label", config.intro.heroVideoAlt);
+  video.poster = config.intro.heroVideoPoster;
+  if (byId("introHeroSource").getAttribute("src") !== config.intro.heroVideo) {
+    byId("introHeroSource").src = config.intro.heroVideo;
+    video.load();
+  }
+  document.querySelectorAll("button[data-start]").forEach(button => {
+    button.addEventListener("click", () => {
+      const seek = () => { video.currentTime = Number(button.dataset.start); };
+      if (video.readyState >= 1) seek();
+      else video.addEventListener("loadedmetadata", seek, {once: true});
+      video.play().catch(() => video.focus());
+    });
+  });
+}
+
+</script>
+</body>
+</html>
