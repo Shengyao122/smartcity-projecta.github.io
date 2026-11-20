@@ -1,390 +1,1150 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#102b32">
-  <meta name="description" content="A McMaster SUMO traffic study comparing human-driven vehicles, automated vehicles and signal timing at Kipling Avenue and Dixon Road in Toronto.">
-  <title>Kipling Avenue &amp; Dixon Road | SUMO Traffic Study</title>
-  <style>
-:root {
-  --hero-bg: #102b32;
-  --hero-fg: #f7faf4;
-  --page-bg: #f9faf6;
-  --accent: #c9ef74;
-  --ink: #122d32;
-  --muted: #496061;
-  --line: #cbd6cf;
-  --teal: #146b62;
-  --body: "Inter", "Segoe UI", "Roboto", Arial, sans-serif;
-  --title: Georgia, "Times New Roman", serif;
-  --mono: "IBM Plex Mono", Consolas, "Liberation Mono", monospace;
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; color: var(--ink); background: var(--page-bg); font: 1rem/1.54 var(--body); }
-body, button { -webkit-font-smoothing: antialiased; }
-a { color: inherit; }
-a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
-  outline: 3px solid #cc7512; outline-offset: 4px;
-}
-.skip { position: absolute; z-index: 4; transform: translateY(-135%); background: white; padding: .55rem 1rem; }
-.skip:focus { transform: translateY(0); }
-.wrap { width: min(73.5rem, calc(100% - clamp(2.5rem, 8vw, 7rem))); margin-inline: auto; }
-.mast, .hero, footer { background: var(--hero-bg); color: var(--hero-fg); }
-.topbar { display: flex; min-height: 4.4rem; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #476169; }
-.brand { font-size: 1.06rem; font-weight: 650; text-decoration: none; }
-.brand span { margin-left: .65rem; padding-left: .8rem; border-left: 1px solid #5d767a; color: #d3e0db; font-size: .9rem; font-weight: 400; }
-.topbar nav { display: flex; align-items: center; flex-wrap: wrap; gap: clamp(.9rem, 2.6vw, 2.3rem); }
-nav a { text-decoration: none; font-size: .93rem; color: #d7e3db; }
-nav a:hover, footer a:hover { color: var(--accent); }
-.hero-grid { display: grid; grid-template-columns: 1fr 1.02fr; align-items: center; gap: clamp(2rem, 4.5vw, 4.7rem); padding-block: clamp(3.5rem, 6.4vw, 6rem); }
-.eyebrow { margin: 0 0 .95rem; color: var(--teal); font: 700 .86rem/1.4 var(--mono); text-transform: uppercase; letter-spacing: .09em; }
-.hero .eyebrow { color: var(--accent); }
-.sep { padding-inline: .65rem; color: #91a5a4; }
-h1, h2 { margin: 0; font-family: var(--title); font-weight: 400; }
-h1 { font-size: clamp(3.3rem, 5.65vw, 5.9rem); line-height: .99; letter-spacing: -.052em; }
-h1 span { display: block; }
-.lede { max-width: 34rem; font-size: clamp(1.04rem, 1.5vw, 1.2rem); line-height: 1.49; color: #dfebe4; margin: 1.45rem 0 1.65rem; }
-.actions { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; }
-.button { display: inline-flex; min-height: 2.85rem; align-items: center; font-weight: 650; text-decoration: none; border-radius: .2rem; padding: .56rem 1.08rem; }
-.primary { background: var(--accent); color: #152c2e; }
-.primary:hover { background: #dcffa0; }
-.quiet { border: 1px solid #82999b; color: white; }
-.quiet:hover { border-color: white; }
-.byline { margin: 1.1rem 0 0; color: #c7d9d2; font-size: .88rem; }
-figure { margin: 0; }
-.hero-map img, .chart-grid img, .method-card img { display: block; width: 100%; height: auto; }
-.hero-map { border: 1px solid #577176; }
-.hero-map figcaption { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .7rem .9rem; font: .78rem/1.35 var(--mono); color: #e4eee6; }
-.hero-map figcaption span + span { color: #c5d2cd; }
-.statstrip { background: #e4ece3; border-bottom: 1px solid #c3d1c7; }
-.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; padding-block: 1.4rem; margin-block: 0; }
-.stats div { display: flex; flex-direction: column-reverse; gap: .13rem; padding-left: clamp(1.3rem, 4vw, 4rem); border-left: 1px solid #a9bab0; }
-.stats div:first-child { padding-left: 0; border: 0; }
-.stats dt { font-size: .95rem; color: #354f4e; }
-.stats dd { margin: 0; font-size: clamp(1.7rem, 3.15vw, 2.45rem); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
-.stats dd small { font-size: 1rem; letter-spacing: 0; }
-.section { padding-block: clamp(3.6rem, 6.5vw, 6.2rem); }
-h2 { font-size: clamp(2.35rem, 4.4vw, 4.1rem); line-height: 1.05; letter-spacing: -.045em; }
-h3 { margin: 0; font-size: 1.3rem; line-height: 1.24; letter-spacing: -.018em; }
-.section-intro { margin: 1.15rem 0 0; max-width: 36rem; color: var(--muted); font-size: 1.06rem; }
-.section-intro.wide { max-width: 57rem; }
-.playback { display: grid; grid-template-columns: .79fr 1.32fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; }
-.movie video { width: 100%; display: block; aspect-ratio: 16/9; background: #16333a; border-radius: .15rem; }
-.movie figcaption { margin: .6rem 0 0; font-size: .92rem; color: var(--muted); }
-.scenes { margin-top: 1.4rem; border-top: 1px solid var(--line); }
-.scenes button { width: 100%; min-height: 2.85rem; display: flex; align-items: center; gap: .7rem; border: none; border-bottom: 1px solid var(--line); background: transparent; padding: .5rem .15rem; color: var(--ink); text-align: left; font: 600 .99rem/1.3 var(--body); cursor: pointer; }
-.scenes button:hover { background: #e9eee6; }
-.swatch { width: .82rem; height: .82rem; border: 1px solid #587070; border-radius: 50%; flex: none; }
-.hdv { background: #f2c546; }
-.cav { background: #a2a9ad; }
-.clock { margin-left: auto; font: .87rem/1 var(--mono); color: var(--muted); }
-.definition { font-size: .9rem; line-height: 1.45; color: var(--muted); margin: .9rem 0 0; }
-.study { background: #edf2eb; border-block: 1px solid #dae2d9; }
-.study-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: clamp(1.35rem,3vw,3rem); margin-top: 2rem; }
-.study-grid article { border-top: 2px solid #598074; padding-top: 1rem; }
-.study-grid ul, .method-card ul { padding-inline-start: 1.15rem; margin: .85rem 0 0; }
-.study-grid li, .method-card li { margin: .42rem 0; }
-li::marker { color: #38786a; }
-.method-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1.1rem; margin-top: 2rem; align-items: start; }
-.method-card { min-width: 0; }
-.method-image, .chart-grid a { display: block; border: 1px solid #bccbc2; border-radius: .15rem; overflow: hidden; }
-.method-image:hover, .chart-grid a:hover { border-color: var(--teal); }
-.method-card h3 { margin: 1rem 0 .45rem; }
-.method-card p { margin: 0; color: var(--muted); }
-.method-card details { margin: .8rem 0 0; }
-.method-card summary { color: var(--teal); font-size: .95rem; font-weight: 650; cursor: pointer; width: fit-content; }
-.method-card summary:hover, .text-link:hover { text-decoration: underline; color: #124e48; }
-.method-card details[open] ul { border-left: 2px solid #bad0c3; padding-left: 1.5rem; }
-.results { background: #e6eee8; border-block: 1px solid #cbd8cc; }
-.chart-grid { margin-block: 1.8rem 2.1rem; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
-.table-scroll { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; text-align: right; font-variant-numeric: tabular-nums; }
-caption { text-align: left; color: var(--ink); font-weight: 650; font-size: 1.3rem; padding-bottom: .85rem; }
-thead { background: #1d3d42; color: white; }
-th, td { border-bottom: 1px solid #becdc1; padding: .72rem .9rem; }
-thead th { font-size: .99rem; line-height: 1.24; }
-thead small { font-size: .86rem; font-weight: 450; color: #e2ebe6; }
-th:first-child { text-align: left; }
-tbody th { font-weight: 500; }
-tbody tr:nth-child(odd) { background: #f4f7f1; }
-.text-link { color: #135c53; text-underline-offset: .19em; font-weight: 640; }
-.data-link { display: inline-block; margin-top: .8rem; }
-.discussion { display: grid; grid-template-columns: 1fr 2.15fr; gap: 2rem; border-top: 1px solid #aebfb4; padding-top: 1.7rem; margin-top: 2.2rem; }
-.discussion p, .sources p { margin: 0 0 .8rem; }
-.discussion p:last-child, .sources p:last-child { margin-bottom: 0; }
-.credits { display: grid; grid-template-columns: 1.1fr .9fr; align-items: start; gap: 3rem; }
-.credits h2 { font-size: clamp(2.25rem, 3.8vw, 3.25rem); }
-.credits .author-name { font-size: 1.28rem; font-weight: 650; margin: 1.2rem 0 .12rem; }
-.credits p { margin-top: .2rem; margin-bottom: .5rem; }
-.credits .affiliation { margin: .7rem 0; color: var(--muted); }
-.sources { margin-top: 1.55rem; max-width: 32rem; }
-.sources h3 { margin-bottom: .85rem; }
-.sources a { display: inline-block; margin-top: .5rem; }
-.footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.48rem; font-size: .9rem; color: #d9e6de; }
-.footer-inner a { text-underline-offset: .18em; }
-@media (max-width: 850px) {
-  .brand span { display: none; }
-  .hero-grid { grid-template-columns: 1fr 1fr; gap: 1.7rem; }
-  .hero-map figcaption { flex-wrap: wrap; }
-  .playback { grid-template-columns: .9fr 1fr; gap: 1.7rem; }
-  .method-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 2rem 1.3rem; }
-}
-@media (max-width: 660px) {
-  .hero-grid, .playback, .study-grid, .chart-grid, .discussion, .credits { grid-template-columns: 1fr; }
-  .topbar { align-items: flex-start; flex-direction: column; gap: .5rem; padding-block: .9rem; }
-  .topbar nav { gap: 1.15rem; }
-  .hero-grid { padding-block: 2.7rem 1.8rem; gap: 1.7rem; }
-  .hero-map figcaption { font-size: .75rem; }
-  .stats { padding-block: 1rem; }
-  .stats div { padding-left: .75rem; }
-  .stats dd { font-size: 1.55rem; }
-  .stats dd small { font-size: .83rem; display: block; margin-top: .12rem; }
-  .stats dt { font-size: .82rem; line-height: 1.2; margin-top: .25rem; }
-  .study-grid { gap: 1.55rem; }
-  .playback { gap: 1.5rem; }
-  .discussion, .credits { gap: .85rem; }
-  .chart-grid { margin-bottom: 1.45rem; }
-  th, td { padding: .6rem; }
-  table { min-width: 31rem; }
-  .sources { margin-top: 1.4rem; }
-  .footer-inner { align-items: flex-start; flex-direction: column; }
-}
-@media (max-width: 440px) {
-  .method-grid { grid-template-columns: 1fr; }
-  .wrap { width: calc(100% - 2.25rem); }
-}
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-}
+  <head>
+    <meta charset="utf-8">
+    <title>Kipling Avenue &amp; Dixon Road | SUMO Traffic Study</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  </style>
-</head>
-<body>
-  <a class="skip" href="#main">Skip to project</a>
-  <div class="mast">
-    <header class="wrap topbar">
-      <a href="#main" class="brand">McMaster University <span data-text="hero.tagline">Smart Cities and Communities</span></a>
-      <nav aria-label="Project sections">
-        <a href="#simulation">Simulation</a><a href="#methods">Methods</a><a href="#results">Results</a><a href="#author">Author</a>
-      </nav>
+    <!-- Bootstrap 5 -->
+    <link href="assets/vendor/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <style>
+      :root{
+        --hero-bg: #111;
+        --hero-fg: #fff;
+        --page-bg: #f8fafc;
+        --accent: #7c3aed;
+
+        --divider-bg: #f9f9f9;
+        --divider-text: #ffffff;
+
+        --footer-bg: #111;
+        --footer-text: #fff;
+        --footer-border: #222;
+      }
+
+      body{
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        scroll-behavior: smooth;
+        background-color: var(--page-bg);
+      }
+
+      a{ color: var(--accent); }
+      a:hover{ opacity: 0.85; }
+
+      /* HERO */
+      .hero-banner{
+        background-color: var(--hero-bg);
+        color: var(--hero-fg);
+      }
+
+      /* RWR 4013 tag */
+      .hero-course-tag{
+        display: inline-block;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: rgba(255,255,255,0.92);
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        margin-bottom: 0.45rem;
+      }
+
+      /* Course Project pill (big) */
+      .hero-tagline{
+        opacity: 1;
+        font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        margin: 0 auto 0.9rem;
+        display: inline-block;
+        padding: 0.45rem 0.85rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
+      }
+
+      .section-title{
+        font-family: "Georgia","Times New Roman",serif;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+      }
+
+      .section-subtitle{
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      /* Portrait */
+      .hero-photo{
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        border: 3px solid rgba(255,255,255,0.75);
+        object-fit: cover;
+        display: block;
+        margin: 1rem auto 1rem;
+      }
+
+      /* Notice / disclaimer bar */
+      .notice{
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.08);
+        padding: 12px 14px;
+        max-width: 980px;
+        margin: 14px auto 0;
+        text-align: left;
+      }
+
+      .notice-title{
+        font-weight: 800;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+      }
+
+      .notice-text{
+        font-size: 0.92rem;
+        margin: 0;
+        opacity: 0.95;
+      }
+
+      /* Divider */
+      .star-divider{
+        font-size: 0.5rem;
+        color: var(--divider-text);
+        background: var(--divider-bg);
+        text-align: center;
+        padding: 1.1rem 0;
+        margin: 0;
+      }
+
+      /* Intro video */
+      .intro-video-wrap{
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.08);
+        aspect-ratio: 16 / 9;
+        background: #000;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.14);
+        margin: 0 auto;
+      }
+
+      .intro-video{
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+        background: #000;
+      }
+
+      .intro-badge{
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 6px 10px;
+        font-size: 12px;
+        border-radius: 999px;
+        background: rgba(0,0,0,0.55);
+        color: #fff;
+        letter-spacing: 0.02em;
+      }
+
+      @media (min-width: 992px){
+        .intro-video-wrap{
+          max-width: 768px;
+        }
+      }
+
+      @media (min-width: 1200px){
+        .intro-video-wrap{
+          max-width: 672px;
+        }
+      }
+
+      /* Circle images */
+      .circle-img{
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        margin: 0 auto 1rem;
+      }
+
+      .tutorial-title{
+        font-size: 0.98rem;
+        font-weight: 800;
+      }
+
+      .tutorial-text{
+        font-size: 0.88rem;
+      }
+
+      /* Cards */
+      .card-soft{
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      /* Check list */
+      .check-list{
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .check-list li{
+        position: relative;
+        padding-left: 1.4rem;
+        margin-bottom: 0.45rem;
+        font-size: 0.98rem;
+      }
+
+      .check-list li::before{
+        content: "✓";
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: #198754;
+        font-weight: 800;
+      }
+
+      /* Module layout */
+      .tutorial-text-col{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .tutorial-large-img{
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 6px 22px rgba(0,0,0,0.16);
+        display: block;
+      }
+
+      @media (min-width: 992px){
+        .tutorial-large-img{
+          max-width: 640px;
+        }
+      }
+
+      /* KPI table */
+      .kpi-table th{
+        font-weight: 800;
+      }
+
+      .kpi-note{
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+
+      /* Footer */
+      footer{
+        border-top: 1px solid var(--footer-border);
+        background-color: var(--footer-bg);
+        color: var(--footer-text);
+      }
+
+      .footer-title{
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-link{
+        display: block;
+        text-decoration: none;
+        color: var(--footer-text);
+        margin-bottom: 0.25rem;
+      }
+
+      .footer-link:hover{
+        color: var(--accent);
+      }
+
+      .footer-disclaimer{
+        opacity: 0.9;
+        font-size: 0.9rem;
+      }
+
+      /* RoadwayVR template attribution */
+      .template-credit{
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.15);
+        text-align: center;
+        font-size: 0.85rem;
+        opacity: 0.85;
+      }
+
+      .template-credit a{
+        color: var(--footer-text);
+        font-weight: 700;
+        text-decoration: underline;
+        margin-left: 0.25rem;
+      }
+
+      .template-credit a:hover{
+        color: var(--accent);
+      }
+
+      /* Project title label + title sizing */
+      #projectTitleLabel{
+        font-size: 0.95rem;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+      }
+
+      #projectTitleText{
+        font-size: clamp(0.95rem, 1.2vw, 1.25rem);
+        line-height: 1.2;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- HERO -->
+    <header class="hero-banner text-center py-5">
+      <div class="container">
+
+        <!-- RWR 4013 tag -->
+        <div class="mb-1">
+          <span class="hero-course-tag" id="courseTag" style="display:none;">SMRTTECH 4SC3</span>
+        </div>
+
+        <!-- Course Project pill -->
+        <div class="hero-tagline" id="studioTagline">Course Project: Smart Cities and Communities</div>
+
+        <img src="assets/img/image1.jpg" alt="Aerial view of Kipling Avenue and Dixon Road with SUMO junction J1 marked." class="hero-photo" id="profileImg">
+
+        <p class="mb-1 fw-semibold" id="studentNameLine">Shengyao Xu</p>
+
+        <p class="mb-2 small text-uppercase text-white" id="studentAffilLine">Automation Engineering Technology, B.Tech., McMaster University, Canada</p>
+
+        <p class="mb-0 small">
+          <a class="text-white text-decoration-underline" id="emailLink" href="mailto:xu44@mcmaster.ca">xu44@mcmaster.ca</a>
+        </p>
+
+        <div class="notice">
+          <div class="notice-title" id="noticeTitle">
+            Academic Disclaimer
+          </div>
+
+          <p class="notice-text" id="noticeText">Academic project for a university course. Educational purposes only. Not an official city analysis, consultation, or endorsement.</p>
+        </div>
+      </div>
     </header>
-  </div>
-  <main id="main">
-    <section class="hero" aria-labelledby="projectTitleText">
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow"><span data-text="hero.courseTag">SMRTTECH 4SC3</span><span class="sep">/</span>Mini Project A</p>
-          <h1 id="projectTitleText">Kipling Avenue <span>&amp; Dixon Road</span></h1>
-          <p class="lede" data-text="hero.summary">Group 4 tested how vehicle automation and signal timing affected speeds on a four-lane approach in Toronto.</p>
-          <div class="actions"><a class="button primary" href="#simulation">Watch the simulation</a><a class="button quiet" href="#results">View results</a></div>
-          <p class="byline"><span data-text="hero.studentName">Shengyao Xu</span> · Group 4 · Fall 2026</p>
+
+    <main id="main">
+      <!-- PROJECT TITLE + AUTOPLAY VIDEO -->
+      <section class="py-3 text-center bg-white" id="simulation">
+        <div class="container">
+          <div class="text-muted small text-uppercase mb-4" id="projectTitleLabel">
+            Project Title
+          </div>
+
+          <h1 class="section-title h2 mb-3" id="projectTitleText">SUMO roadway modelling and speed–density assessment at Kipling Avenue and Dixon Road, Toronto</h1>
+
+          <div class="intro-video-wrap">
+            <video id="introHeroVideo" class="intro-video" autoplay muted loop playsinline preload="metadata" aria-label="Autoplay preview video (academic project)" controls="controls" poster="assets/video/poster.jpg">
+
+              <source id="introHeroSource" src="assets/video/video.mp4" type="video/mp4">
+
+              Your browser does not support the video tag.
+            </source></video>
+
+            <div class="intro-badge">
+              Academic Demo
+            </div>
+          </div>
+
+          <p class="mt-3 mb-0 text-muted small" id="introCaption">Twenty seconds at junction J1. Yellow human-driven vehicles appear first, followed by grey connected and autonomous vehicles. Each clip shows simulation time 600–640 s at 4× speed.</p>
+        <div class="d-flex gap-3 justify-content-center mt-2" role="group" aria-label="Video chapters">
+  <button type="button" class="btn btn-link btn-sm p-0" data-start="0" aria-controls="introHeroVideo">0:00 · Base HDV</button>
+  <button type="button" class="btn btn-link btn-sm p-0" data-start="10" aria-controls="introHeroVideo">0:10 · Scenario 1 AV/CAV</button>
+</div></div>
+      </section>
+
+      <!-- INTRODUCTION (3 CARDS) -->
+      <div class="star-divider">*</div>
+
+      <section class="py-5 bg-white" id="study">
+        <div class="container">
+          <h2 class="section-title h3 text-center mb-4" id="caseTitle">
+            Introduction
+          </h2>
+
+          <div class="row g-4">
+            <div class="col-lg-4">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <h3 class="h5 mb-2" id="backgroundTitle">
+                    Background
+                  </h3>
+
+                  <ul class="mb-0" id="backgroundList"></ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <h3 class="h5 mb-2" id="problemTitle">
+                    Problem Statement
+                  </h3>
+
+                  <ul class="mb-0" id="problemList"></ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <h3 class="h5 mb-2" id="objectivesTitle">
+                    Project Objectives
+                  </h3>
+
+                  <ul class="mb-0" id="objectivesList"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <figure class="hero-map">
-          <img id="profileImg" src="assets/img/image1.jpg" width="1300" height="800" alt="Aerial study map of junction J1 in Toronto.">
-          <figcaption><span>Kipling–Dixon junction</span><span>43.6944° N &nbsp; 79.5586° W</span></figcaption>
-        </figure>
-      </div>
-    </section>
+      </section>
 
-    <div class="statstrip">
-      <dl class="wrap stats">
-        <div><dt>Nominal demand</dt><dd>3,000 <small>veh/h</small></dd></div>
-        <div><dt>Fixed signal cycle</dt><dd>60 <small>seconds</small></dd></div>
-        <div><dt>Observation window</dt><dd>1 <small>hour per run</small></dd></div>
-      </dl>
-    </div>
+      <!-- PIPELINE OVERVIEW -->
+      <div class="star-divider">*</div>
 
-    <section class="section wrap playback" id="simulation" aria-labelledby="simTitle">
-      <div>
-        <p class="eyebrow">Traffic simulation</p>
-        <h2 id="simTitle">Two fleets at the same signal</h2>
-        <p class="section-intro">Watch vehicles approach junction J1 under the original signal plan. Both clips replay simulation time 600–640 s at four times real speed.</p>
-        <div class="scenes" aria-label="Video chapters">
-          <button type="button" data-start="0" aria-controls="introHeroVideo"><span class="swatch hdv"></span><span>Base · 100% HDV</span><span class="clock">0:00</span></button>
-          <button type="button" data-start="10" aria-controls="introHeroVideo"><span class="swatch cav"></span><span>Scenario 1 · 100% AV/CAV</span><span class="clock">0:10</span></button>
+      <section class="py-5 bg-white" id="methods">
+        <div class="container">
+          <h2 class="section-title h3 text-center mb-2" id="overviewTitle">
+            Methodology
+          </h2>
+
+          <p class="text-center text-muted mb-5 section-subtitle" id="overviewSubtitle" style="display:none;">
+          </p>
+
+          <div id="stepsRow" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-5 justify-content-center">
+          </div>
         </div>
-        <p class="definition">HDV means human-driven vehicle. CAV means connected and autonomous vehicle.</p>
-      </div>
-      <figure class="movie">
-        <video id="introHeroVideo" controls muted playsinline preload="metadata" poster="assets/video/poster.jpg" aria-label="Group 4 SUMO scenario comparison" aria-describedby="introCaption">
-          <source id="introHeroSource" src="assets/video/video.mp4" type="video/mp4">
-          <a href="assets/video/video.mp4">Download the simulation video</a>
-        </video>
-        <figcaption id="introCaption" data-text="intro.videoCaption">Yellow vehicles show the HDV baseline and grey vehicles show the CAV scenario.</figcaption>
-      </figure>
-    </section>
+      </section>
 
-    <section class="study" id="study" aria-labelledby="studyTitle">
-      <div class="wrap section">
-        <p class="eyebrow">Mini Project A</p>
-        <h2 id="studyTitle" data-text="caseStudy.title">Study design</h2>
-        <p class="section-intro wide" data-text="intro.projectTitle">SUMO roadway modelling and speed–density assessment at Kipling Avenue and Dixon Road, Toronto</p>
-        <div class="study-grid">
-          <article><h3 data-text="caseStudy.backgroundTitle">Background</h3><ul id="backgroundList"></ul></article>
-          <article><h3 data-text="caseStudy.problemTitle">Problem statement</h3><ul id="problemList"></ul></article>
-          <article><h3 data-text="caseStudy.objectivesTitle">Project objectives</h3><ul id="objectivesList"></ul></article>
+      <!-- IMPLEMENTATION MODULES -->
+      <div class="star-divider">*</div>
+
+      <section class="py-5 bg-white">
+        <div class="container">
+          <h2 class="section-title h3 text-center mb-2" id="implTitle">
+            Methodology Steps (Demo Modules)
+          </h2>
+
+          <p class="text-center text-muted mb-5 section-subtitle" id="implSubtitle" style="display:none;">
+          </p>
+
+          <div id="modulesContainer"></div>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <div class="star-divider">*</div>
+
+      <section class="py-5 bg-light" id="results">
+        <div class="container">
+          <h2 class="section-title h3 text-center mb-2" id="resultsTitle">
+            Results
+          </h2>
+
+          <p class="text-center text-muted mb-4 section-subtitle" id="resultsSubtitle">Each marker represents one 100-second interval during the first simulated hour, including startup. Both graphs use the same axes. Density totals vehicles across all four lanes. Each line is a least-squares fit over the observed range.</p>
+
+          <!-- CHARTS -->
+          <div class="row g-4 mt-4">
+            <div class="col-lg-6">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <h3 class="h6 fw-bold mb-3" id="chartLeftTitle">Base · 100% HDV</h3>
+
+                  <img id="chartLeftImg" class="img-fluid rounded" src="assets/img/image6.jpg" alt="Base scenario on E61. Across 36 intervals, speed declines as density rises. Mean speed is 3.562 m/s and mean density is 63.077 veh/km.">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <h3 class="h6 fw-bold mb-3" id="chartRightTitle">Scenario 1 · 100% AV/CAV</h3>
+
+                  <img id="chartRightImg" class="img-fluid rounded" src="assets/img/image7.jpg" alt="Scenario 1 on E61, using the same axes as the baseline. Mean speed is 3.576 m/s and mean density is 64.830 veh/km.">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DISCUSSION -->
+          <div class="row g-4 mt-3">
+            <div class="col-lg-12">
+              <div class="card card-soft">
+                <div class="card-body">
+                  <h3 class="h5 mb-2" id="discussionTitle">
+                    Discussion
+                  </h3>
+
+                  <ul class="mb-0" id="discussionList"></ul>
+
+                  <div class="mt-3">
+  <details><summary>One-hour averages on E61</summary>
+    <div class="table-responsive mt-2"><table class="table table-sm kpi-table align-middle">
+      <caption class="visually-hidden">One-hour averages for the three E61 scenarios</caption>
+      <thead><tr><th scope="col">E61 measure</th><th scope="col">Base HDV</th><th scope="col">Scenario 1 CAV</th><th scope="col">Scenario 2 HDV with revised timing</th></tr></thead>
+      <tbody id="kpiTbody"></tbody></table></div>
+  </details>
+  <a class="small" id="dataLink" href="assets/data/E61_intervals.csv" download>Download interval data (CSV)</a>
+</div><p class="kpi-note mt-3 mb-0" id="disclaimerLong">
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TEAM -->
+      <div class="star-divider">*</div>
+
+      <section class="py-5 bg-white" id="author">
+        <div class="container">
+          <h2 class="section-title h3 text-center mb-2" id="teamTitle">
+            Team &amp; Acknowledgments
+          </h2>
+
+          <p class="text-center text-muted mb-4 section-subtitle" id="teamSubtitle">Mini Project A was developed by Group 4 for SMRTTECH 4SC3 at McMaster University in Fall 2026.</p>
+
+          <div class="row g-4">
+            <div class="col-lg-6">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <h3 class="h6 fw-bold mb-2">
+                    Team
+                  </h3>
+
+                  <ul class="mb-0" id="teamList"></ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="card card-soft h-100">
+                <div class="card-body">
+                  <h3 class="h6 fw-bold mb-2">
+                    Acknowledgments
+                  </h3>
+
+                  <ul class="mb-3" id="ackList"></ul>
+
+                  <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+                    <div class="text-muted small" id="repoLabel">
+                      Project Repository
+                    </div>
+
+                    <a class="btn btn-sm btn-outline-primary" id="repoLink" href="https://github.com/Shengyao122/smartcity-projecta.github.io" target="_blank" rel="noopener noreferrer">
+                      Open Repository
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="py-5">
+      <div class="container small">
+        <div class="row gy-4">
+          <div class="col-md-4">
+            <div class="footer-title">
+              Academic Disclaimer
+            </div>
+
+            <div class="footer-disclaimer" id="footerDisclaimer">
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="footer-title">
+              Links
+            </div>
+
+            <a href="https://roadwayvr.com" id="footerHome" class="footer-link" target="_blank" rel="noopener noreferrer">
+              RoadwayVR
+            </a>
+
+            <a href="https://github.com/Shengyao122/smartcity-projecta.github.io" class="footer-link" target="_blank" rel="noopener noreferrer">
+              GitHub
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <div class="footer-title">
+              Contact
+            </div>
+
+            <a href="mailto:xu44@mcmaster.ca" id="footerEmail" class="footer-link">xu44@mcmaster.ca</a>
+          </div>
+        </div>
+
+        <!-- RoadwayVR template attribution -->
+        <div class="template-credit">
+          <span id="templateCredit">
+            This academic showcase template was developed by RoadwayVR.
+          </span>
+
+          <a id="templateCreditLink" href="https://roadwayvr.com" target="_blank" rel="noopener noreferrer">
+            Learn more at RoadwayVR.com
+          </a>
         </div>
       </div>
-    </section>
+    </footer>
 
-    <section class="section wrap" id="methods" aria-labelledby="overviewTitle">
-      <p class="eyebrow">Methodology</p>
-      <h2 id="overviewTitle" data-text="overview.title">From the network to the results</h2>
-      <div class="method-grid" id="stepsRow"></div>
-    </section>
+    <!-- Bootstrap JS -->
+    <!-- Config -->
+    <script src="config.js"></script>
 
-    <section class="results" id="results" aria-labelledby="resultsTitle">
-      <div class="wrap section">
-        <p class="eyebrow">Results and discussion</p>
-        <h2 id="resultsTitle" data-text="results.title">Speed and density on E61</h2>
-        <p class="section-intro wide" data-text="results.subtitle">Matched observations from the same upstream SUMO edge.</p>
-        <div class="chart-grid">
-          <a id="leftChartLink" href="assets/img/image6.jpg" aria-label="Open the full-size HDV chart"><img id="chartLeftImg" src="assets/img/image6.jpg" width="1300" height="800" loading="lazy" alt="Base speed–density diagram on E61."></a>
-          <a id="rightChartLink" href="assets/img/image7.jpg" aria-label="Open the full-size CAV chart"><img id="chartRightImg" src="assets/img/image7.jpg" width="1300" height="800" loading="lazy" alt="Scenario 1 speed–density diagram on E61."></a>
-        </div>
-        <div class="table-scroll" role="region" aria-labelledby="averagesCaption" tabindex="0">
-          <table>
-            <caption id="averagesCaption">One-hour averages on the four-lane approach</caption>
-            <thead><tr><th scope="col">E61 measure</th><th scope="col">Base<br><small>100% HDV</small></th><th scope="col">Scenario 1<br><small>100% CAV</small></th><th scope="col">Scenario 2<br><small>HDV, revised timing</small></th></tr></thead>
-            <tbody id="kpiTbody"></tbody>
-          </table>
-        </div>
-        <a class="text-link data-link" id="dataLink" download href="assets/data/E61_intervals.csv">Download interval data (CSV)</a>
-        <div class="discussion">
-          <h3>What changed on E61?</h3>
-          <div id="discussionList"></div>
-        </div>
-      </div>
-    </section>
+    <!-- Apply config -->
+    <script>
+      const C = window.SITE_CONFIG || {};
 
-    <section class="wrap section credits" id="author" aria-labelledby="teamTitle">
-      <div>
-        <p class="eyebrow">Lab 5</p>
-        <h2 id="teamTitle" data-text="team.title">Author and acknowledgments</h2>
-        <p class="author-name" data-text="hero.studentName">Shengyao Xu</p>
-        <p data-text="team.members.0.role">Lab 5 web showcase, results analysis and visualization</p>
-        <p class="affiliation"><span data-text="hero.program">Automation Engineering Technology, B.Tech.</span><br><span data-text="hero.university">McMaster University</span></p>
-        <a class="text-link" id="emailLink" href="mailto:shengyao.xu@example.com">shengyao.xu@example.com</a>
-      </div>
-      <div class="sources">
-        <h3>Project sources</h3>
-        <div id="ackList"></div>
-        <a class="text-link" id="repoLink" href="https://github.com/Shengyao122/smartcity-projecta.github.io">Project repository</a>
-      </div>
-    </section>
-  </main>
-  <footer><div class="wrap footer-inner"><span data-text="disclaimer.short">McMaster University coursework based on simulated traffic and assumed demand.</span><a id="templateCreditLink" href="https://roadwayvr.com">Showcase template by RoadwayVR</a></div></footer>
-  <noscript><p class="wrap">Enable JavaScript to display the written study, method details and summary table. The video, individual charts and CSV are available from their links.</p></noscript>
-<script src="config.js"></script>
-<script>
-// Bind the course template's showcase sections to the project configuration.
-"use strict";
+      // Theme vars
+      if (C.theme) {
+        document.documentElement.style.setProperty(
+          "--hero-bg",
+          C.theme.heroBg || "#111"
+        );
 
-const config = window.SITE_CONFIG;
-const byId = id => document.getElementById(id);
+        document.documentElement.style.setProperty(
+          "--hero-fg",
+          C.theme.heroText || "#fff"
+        );
 
-function node(tag, text) {
-  const element = document.createElement(tag);
-  element.textContent = text;
-  return element;
-}
+        document.documentElement.style.setProperty(
+          "--page-bg",
+          C.theme.pageBg || "#f8fafc"
+        );
 
-function fillList(id, items, tag = "li") {
-  byId(id).replaceChildren(...items.map(item => node(tag, item)));
-}
+        document.documentElement.style.setProperty(
+          "--accent",
+          C.theme.accent || "#7c3aed"
+        );
+      }
 
-function showMethod(step, module) {
-  const article = document.createElement("article");
-  article.className = "method-card";
-  const link = document.createElement("a");
-  link.className = "method-image";
-  link.href = step.image;
-  link.setAttribute("aria-label", "Open full-size figure for " + step.title.toLowerCase());
-  const image = document.createElement("img");
-  image.src = step.image;
-  image.alt = step.alt;
-  image.width = 1300;
-  image.height = 800;
-  image.loading = "lazy";
-  link.append(image);
-  const detail = document.createElement("details");
-  const toggle = node("summary", config.implementation.title);
-  toggle.setAttribute("aria-label", "Method details for " + module.title.toLowerCase());
-  const list = document.createElement("ul");
-  list.append(...module.bullets.map(bullet => node("li", bullet.text)));
-  detail.append(toggle, list);
-  article.append(link, node("h3", step.title), node("p", step.text), detail);
-  return article;
-}
+      if (C.dividers) {
+        document.documentElement.style.setProperty(
+          "--divider-bg",
+          C.dividers.dividerBg || "#f9f9f9"
+        );
 
-if (config) {
-  document.title = config.pageTitle;
-  document.querySelectorAll("[data-text]").forEach(element => {
-    const value = element.dataset.text.split(".").reduce((object, key) => object?.[key], config);
-    if (typeof value === "string") element.textContent = value;
-  });
-  for (const [property, value] of Object.entries({
-    "--hero-bg": config.theme.heroBg, "--hero-fg": config.theme.heroText,
-    "--page-bg": config.theme.pageBg, "--accent": config.theme.accent
-  })) document.documentElement.style.setProperty(property, value);
-  const titleParts = config.hero.place.split(" & ");
-  byId("projectTitleText").replaceChildren(titleParts[0]);
-  if (titleParts.length > 1) byId("projectTitleText").append(" ", node("span", "& " + titleParts.slice(1).join(" & ")));
-  byId("profileImg").src = config.hero.profileImage;
-  byId("profileImg").alt = config.hero.imageAlt;
-  const email = byId("emailLink");
-  email.href = "mailto:" + config.hero.email;
-  email.textContent = config.hero.email;
+        document.documentElement.style.setProperty(
+          "--divider-text",
+          C.dividers.dividerText || "#ffffff"
+        );
+      }
 
-  fillList("backgroundList", config.caseStudy.backgroundBullets);
-  fillList("problemList", config.caseStudy.problemBullets);
-  fillList("objectivesList", config.caseStudy.objectivesBullets);
-  byId("stepsRow").replaceChildren(...config.overview.steps.map((step, i) => showMethod(step, config.implementation.modules[i])));
-  const chartBindings = [
-    [config.results.charts.left, "chartLeftImg", "leftChartLink"],
-    [config.results.charts.right, "chartRightImg", "rightChartLink"]
-  ];
-  for (const [chart, imageId, linkId] of chartBindings) {
-    const image = byId(imageId);
-    image.src = chart.src;
-    image.alt = chart.alt;
-    byId(linkId).href = chart.src;
-    byId(linkId).setAttribute("aria-label", "Open full-size chart for " + chart.title);
-  }
-  byId("kpiTbody").replaceChildren(...config.results.rows.map(([metric, ...values]) => {
-    const row = document.createElement("tr");
-    const label = node("th", metric);
-    label.scope = "row";
-    row.append(label, ...values.map(value => node("td", value)));
-    return row;
-  }));
-  byId("dataLink").href = config.results.dataUrl;
-  fillList("discussionList", config.results.discussionBullets, "p");
-  fillList("ackList", config.team.acknowledgments, "p");
-  byId("repoLink").href = config.team.repoUrl;
-  byId("repoLink").textContent = config.team.repoLabel;
-  byId("templateCreditLink").href = config.footer.templateCreditUrl;
-  byId("templateCreditLink").textContent = config.footer.templateCredit;
+      if (C.footer) {
+        document.documentElement.style.setProperty(
+          "--footer-bg",
+          C.footer.footerBg || "#111"
+        );
 
-  const video = byId("introHeroVideo");
-  video.setAttribute("aria-label", config.intro.heroVideoAlt);
-  video.poster = config.intro.heroVideoPoster;
-  if (byId("introHeroSource").getAttribute("src") !== config.intro.heroVideo) {
-    byId("introHeroSource").src = config.intro.heroVideo;
-    video.load();
-  }
-  document.querySelectorAll("button[data-start]").forEach(button => {
-    button.addEventListener("click", () => {
-      const seek = () => { video.currentTime = Number(button.dataset.start); };
-      if (video.readyState >= 1) seek();
-      else video.addEventListener("loadedmetadata", seek, {once: true});
-      video.play().catch(() => video.focus());
-    });
-  });
-}
+        document.documentElement.style.setProperty(
+          "--footer-text",
+          C.footer.footerText || "#fff"
+        );
 
+        document.documentElement.style.setProperty(
+          "--footer-border",
+          C.footer.footerBorder || "#222"
+        );
+      }
+
+      // Title
+      if (C.pageTitle) {
+        document.title = C.pageTitle;
+      }
+
+      const el = (id) => document.getElementById(id);
+
+      const setText = (id, val) => {
+        const x = el(id);
+
+        if (x && val != null) {
+          x.textContent = val;
+        }
+      };
+
+      const setTextOrHide = (id, val) => {
+        const x = el(id);
+
+        if (!x) {
+          return;
+        }
+
+        const v = (val ?? "").toString().trim();
+
+        if (!v) {
+          x.style.display = "none";
+          return;
+        }
+
+        x.style.display = "";
+        x.textContent = v;
+      };
+
+      const fillList = (ulId, items) => {
+        const ul = el(ulId);
+
+        if (!ul) {
+          return;
+        }
+
+        ul.innerHTML = (items || [])
+          .map((t) => `<li>${t}</li>`)
+          .join("");
+      };
+
+      // Footer links and RoadwayVR template attribution
+      const footerHome = el("footerHome");
+
+      if (footerHome) {
+        footerHome.href =
+          C.homeUrl || "https://roadwayvr.com";
+
+        footerHome.textContent =
+          C.footer?.homeLinkText || "RoadwayVR";
+      }
+
+      const templateCredit = el("templateCredit");
+      const templateCreditLink = el("templateCreditLink");
+
+      if (templateCredit) {
+        templateCredit.textContent =
+          C.footer?.templateCredit ||
+          "This academic showcase template was developed by RoadwayVR.";
+      }
+
+      if (templateCreditLink) {
+        templateCreditLink.textContent =
+          C.footer?.templateCreditLinkText ||
+          "Learn more at RoadwayVR.com";
+
+        templateCreditLink.href =
+          C.footer?.templateCreditUrl ||
+          "https://roadwayvr.com";
+      }
+
+      // Hero
+      if (C.hero) {
+        // course tag (RWR 4013)
+        const ct = el("courseTag");
+        const tagText = (C.hero.courseTag || "").trim();
+
+        if (ct) {
+          if (tagText) {
+            ct.textContent = tagText;
+            ct.style.display = "inline-block";
+          } else {
+            ct.style.display = "none";
+          }
+        }
+
+        setText(
+          "studioTagline",
+          C.hero.tagline ||
+          "Course Project: Digital Twins for Smart Cities"
+        );
+
+        setText(
+          "studentNameLine",
+          C.hero.studentName || ""
+        );
+
+        setText(
+          "studentAffilLine",
+          [C.hero.program, C.hero.university]
+            .filter(Boolean)
+            .join(", ")
+        );
+
+        const img = el("profileImg");
+
+        if (img && C.hero.profileImage) {
+          img.src = C.hero.profileImage;
+        }
+
+        const emailLink = el("emailLink");
+
+        if (emailLink && C.hero.email) {
+          emailLink.textContent = C.hero.email;
+          emailLink.href = "mailto:" + C.hero.email;
+        }
+
+        const footerEmail = el("footerEmail");
+
+        if (footerEmail && C.hero.email) {
+          footerEmail.textContent = C.hero.email;
+          footerEmail.href = "mailto:" + C.hero.email;
+        }
+      }
+
+      // Disclaimer
+      if (C.disclaimer) {
+        setText(
+          "noticeTitle",
+          "Academic Disclaimer"
+        );
+
+        setText(
+          "noticeText",
+          C.disclaimer.short || ""
+        );
+
+        setText(
+          "footerDisclaimer",
+          C.disclaimer.short || ""
+        );
+
+        setText(
+          "disclaimerLong",
+          C.disclaimer.long || ""
+        );
+      }
+
+      // Intro (Project title + video)
+      if (C.intro) {
+        setTextOrHide(
+          "projectTitleLabel",
+          C.intro.projectTitleLabel || "Project Title"
+        );
+
+        setTextOrHide(
+          "projectTitleText",
+          C.intro.projectTitle || ""
+        );
+
+        setTextOrHide(
+          "introCaption",
+          C.intro.videoCaption || ""
+        );
+
+        const v = el("introHeroVideo");
+        const s = el("introHeroSource");
+
+        if (v && s) {
+          if (C.intro.heroVideo) {
+            s.src = C.intro.heroVideo;
+          }
+
+          if (C.intro.heroVideoPoster) {
+            v.poster = C.intro.heroVideoPoster;
+          }
+
+          if (C.intro.heroVideoAlt) {
+            v.setAttribute(
+              "aria-label",
+              C.intro.heroVideoAlt
+            );
+          }
+
+          v.load();
+
+          const tryPlay = () => {
+            v.play().catch(() => {});
+          };
+
+          v.addEventListener(
+            "canplay",
+            tryPlay,
+            { once: true }
+          );
+
+          tryPlay();
+        }
+      }
+
+      // Introduction cards
+      if (C.caseStudy) {
+        setText(
+          "caseTitle",
+          C.caseStudy.title || "Introduction"
+        );
+
+        setText(
+          "backgroundTitle",
+          C.caseStudy.backgroundTitle || "Background"
+        );
+
+        fillList(
+          "backgroundList",
+          C.caseStudy.backgroundBullets || []
+        );
+
+        setText(
+          "problemTitle",
+          C.caseStudy.problemTitle || "Problem Statement"
+        );
+
+        fillList(
+          "problemList",
+          C.caseStudy.problemBullets || []
+        );
+
+        setText(
+          "objectivesTitle",
+          C.caseStudy.objectivesTitle || "Project Objectives"
+        );
+
+        fillList(
+          "objectivesList",
+          C.caseStudy.objectivesBullets || []
+        );
+      }
+
+      // Overview steps
+      if (C.overview) {
+        setText(
+          "overviewTitle",
+          C.overview.title || "Methodology"
+        );
+
+        setTextOrHide(
+          "overviewSubtitle",
+          C.overview.subtitle || ""
+        );
+
+        const stepsRow = el("stepsRow");
+
+        if (
+          stepsRow &&
+          Array.isArray(C.overview.steps)
+        ) {
+          stepsRow.innerHTML = C.overview.steps
+            .slice(0, 4)
+            .map((step) => `
+              <div class="col">
+                <div class="text-center h-100 px-2">
+                  <img
+                    src="${step.image || ""}"
+                    alt="${step.alt || step.title || ""}"
+                    class="circle-img">
+
+                  <p class="tutorial-title mt-2 mb-1">
+                    ${step.title || ""}
+                  </p>
+
+                  <p class="tutorial-text text-muted mb-0">
+                    ${step.text || ""}
+                  </p>
+                </div>
+              </div>
+            `)
+            .join("");
+        }
+      }
+
+      // Implementation modules
+      if (C.implementation) {
+        setText(
+          "implTitle",
+          C.implementation.title ||
+          "Methodology Steps (Demo Modules)"
+        );
+
+        setTextOrHide(
+          "implSubtitle",
+          C.implementation.subtitle || ""
+        );
+
+        const wrap = el("modulesContainer");
+
+        const modules = Array.isArray(
+          C.implementation.modules
+        )
+          ? C.implementation.modules.slice(0, 4)
+          : [];
+
+        if (wrap) {
+          wrap.innerHTML = modules
+            .map((m, i) => {
+              const bullets = Array.isArray(m.bullets)
+                ? m.bullets
+                : [];
+
+              const bulletHtml = bullets
+                .map((b) => `<li>${b.text || ""}</li>`)
+                .join("");
+
+              const textColOrder =
+                i % 2 === 1 ? "order-lg-2" : "";
+
+              const imgColOrder =
+                i % 2 === 1 ? "order-lg-1" : "";
+
+              return `
+                <div class="row gy-4 mb-5">
+                  <div class="col-lg-6 ${textColOrder} tutorial-text-col">
+                    <div>
+                      <h3 class="h4 mb-2">
+                        ${m.title || ""}
+                      </h3>
+
+                      <ul class="check-list">
+                        ${bulletHtml}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6 ${imgColOrder}">
+                    <img
+                      src="${m.image || ""}"
+                      alt="${m.alt || m.title || ""}"
+                      class="img-fluid tutorial-large-img">
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+        }
+      }
+
+      // Results
+      if (C.results) {
+        setText(
+          "resultsTitle",
+          C.results.title || "Results"
+        );
+
+        setText(
+          "resultsSubtitle",
+          C.results.subtitle || ""
+        );
+
+        setText(
+          "discussionTitle",
+          C.results.discussionTitle || "Discussion"
+        );
+
+        const tbody = el("kpiTbody");
+        for (const [metric, ...values] of C.results.rows || []) {
+          const row = tbody.insertRow();
+          const label = document.createElement("th");
+          label.scope = "row";
+          label.textContent = metric;
+          row.append(label);
+          for (const value of values) row.insertCell().textContent = value;
+        }
+        el("dataLink").href = C.results.dataUrl;
+
+        if (C.results.charts) {
+          const L = C.results.charts.left || {};
+          const R = C.results.charts.right || {};
+
+          setText(
+            "chartLeftTitle",
+            L.title || "Average Delay per Approach"
+          );
+
+          setText(
+            "chartRightTitle",
+            R.title || "Average Delay (Overall)"
+          );
+
+          const li = el("chartLeftImg");
+
+          if (li && L.src) {
+            li.src = L.src;
+            li.alt = L.alt || "";
+          }
+
+          const ri = el("chartRightImg");
+
+          if (ri && R.src) {
+            ri.src = R.src;
+            ri.alt = R.alt || "";
+          }
+        }
+
+        fillList(
+          "discussionList",
+          C.results.discussionBullets || []
+        );
+      }
+
+      // Team
+      if (C.team) {
+        setText(
+          "teamTitle",
+          C.team.title || "Team & Acknowledgments"
+        );
+
+        setText(
+          "teamSubtitle",
+          C.team.subtitle || ""
+        );
+
+        const teamList = el("teamList");
+
+        if (teamList) {
+          teamList.innerHTML = (C.team.members || [])
+            .map((m) => `
+              <li>
+                <strong>${m.name || ""}</strong>
+                — ${m.role || ""}
+              </li>
+            `)
+            .join("");
+        }
+
+        fillList(
+          "ackList",
+          C.team.acknowledgments || []
+        );
+
+        setText(
+          "repoLabel",
+          C.team.repoLabel || "Project Repository"
+        );
+
+        const repoLink = el("repoLink");
+
+        if (repoLink) {
+          repoLink.href = C.team.repoUrl || "#";
+        }
+      }
+    
+      // Keep the full-size charts and diagrams accessible from the showcase.
+      for (const img of document.querySelectorAll("#stepsRow img, #modulesContainer img, #chartLeftImg, #chartRightImg")) {
+        const link = document.createElement("a");
+        link.href = img.src;
+        link.setAttribute("aria-label", "Open full-size image: " + img.alt);
+        img.replaceWith(link);
+        link.append(img);
+      }
+      for (const button of document.querySelectorAll("button[data-start]")) {
+        button.addEventListener("click", () => {
+          const video = el("introHeroVideo");
+          const seek = () => { video.currentTime = Number(button.dataset.start); };
+          if (video.readyState >= 1) seek();
+          else video.addEventListener("loadedmetadata", seek, {once: true});
+          video.play().catch(() => video.focus());
+        });
+      }
 </script>
-</body>
+  </body>
 </html>
